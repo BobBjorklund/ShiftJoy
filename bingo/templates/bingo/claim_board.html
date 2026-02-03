@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Claim Your Bingo Board</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .claim-card {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            font-size: 13px;
+        }
+        
+        .warning strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        input[type="email"],
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="email"]:focus,
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .error {
+            background: #ffebee;
+            border: 1px solid #f44336;
+            color: #c62828;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="claim-card">
+        <h1>🎮 Join the Game!</h1>
+        <p class="subtitle">Enter your details to claim your bingo board</p>
+        
+        <div class="warning">
+            <strong>⚠️ Heads up!</strong>
+            Your admin can see who submitted what. Keep everything work-appropriate!
+        </div>
+        
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+        
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="player_email">Work Email</label>
+                <input 
+                    type="email" 
+                    id="player_email" 
+                    name="player_email" 
+                    placeholder="you@company.com"
+                    required
+                >
+            </div>
+            
+            <div class="form-group">
+                <label for="player_name">Display Name</label>
+                <input 
+                    type="text" 
+                    id="player_name" 
+                    name="player_name" 
+                    placeholder="Your Name"
+                    maxlength="50"
+                    required
+                >
+            </div>
+            
+            <button type="submit" class="btn">Claim My Board 🎯</button>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Error</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .error-card {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 400px;
+        }
+        
+        h1 {
+            color: #f44336;
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        p {
+            color: #666;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-card">
+        <h1>❌</h1>
+        <p>{{ error }}</p>
+    </div>
+</body>
+</html>
