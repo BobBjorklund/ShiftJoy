@@ -7,5 +7,5 @@ Django web app using ASGI (Daphne).
 2. pip install -r requirements.txt
 3. python manage.py migrate
 4. python manage.py runserver
-
+ doot doot doo
 
