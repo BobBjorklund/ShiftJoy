@@ -317,3 +317,7 @@ def get_game_state(request, game_id):
             for uuid, board in game_data['board_assignments'].items()
         }
     })
+from django.http import JsonResponse
+
+def healthz(request):
+    return JsonResponse({"ok": True})

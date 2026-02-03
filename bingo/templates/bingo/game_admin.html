@@ -447,6 +447,9 @@
                 window.location.reload();
             }, 3000);
         };
+        setInterval(() => {
+            fetch('/healthz', { cache: 'no-store' }).catch(() => { });
+        }, 8 * 60 * 1000);
     </script>
     <div class="header" style="margin-top: 25px;">
         <h2>🔗 Share Board Links</h2>
