@@ -9,5 +9,5 @@ urlpatterns = [
     path('games/<str:game_id>/state/', views.get_game_state, name='game_state'),  # ADD THIS
     path('games/<str:game_id>/call/', views.call_phrase, name='call_phrase'),
     path('games/<str:game_id>/<str:board_uuid>/', views.BoardView.as_view(), name='board_view'),
-    path("healthz", healthz, name="healthz"),
+    path("healthz", views.healthz, name="healthz"),
 ]
