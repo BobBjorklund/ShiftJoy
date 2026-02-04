@@ -355,3 +355,6 @@ def claim_win(request, game_id):
         import traceback
         traceback.print_exc()
         return JsonResponse({'error': str(e)}, status=500)
+class LandingPageView(View):
+    def get(self, request):
+        return render(request, 'bingo/landing.html')

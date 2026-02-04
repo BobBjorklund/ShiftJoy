@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ShiftJoy - Engagement Games for Your Team</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 60px 0;
+        }
+        
+        .logo {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            font-size: 56px;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        
+        .tagline {
+            font-size: 24px;
+            opacity: 0.95;
+            margin-bottom: 40px;
+        }
+        
+        .cta {
+            display: inline-block;
+            background: white;
+            color: #667eea;
+            padding: 18px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 20px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+        
+        .cta:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+        }
+        
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            margin-top: 80px;
+        }
+        
+        .game-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            transition: transform 0.3s, background 0.3s;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .game-card:hover {
+            transform: translateY(-8px);
+            background: rgba(255, 255, 255, 0.25);
+        }
+        
+        .game-card.available:hover {
+            cursor: pointer;
+        }
+        
+        .game-icon {
+            font-size: 72px;
+            margin-bottom: 20px;
+            display: block;
+        }
+        
+        .game-title {
+            font-size: 28px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .game-description {
+            font-size: 16px;
+            opacity: 0.9;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .badge-live {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .badge-soon {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 60px 0 40px;
+            opacity: 0.8;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 40px;
+            }
+            
+            .tagline {
+                font-size: 18px;
+            }
+            
+            .logo {
+                font-size: 48px;
+            }
+            
+            header {
+                padding: 40px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">🎮</div>
+            <h1>ShiftJoy</h1>
+            <p class="tagline">Make work shifts fun with engagement games</p>
+            <a href="/bingo/create/" class="cta">Create Your First Game →</a>
+        </header>
+        
+        <div class="games-grid">
+            <div class="game-card available" onclick="window.location.href='/bingo/create/'">
+                <span class="game-icon">🎯</span>
+                <h2 class="game-title">Bingo</h2>
+                <p class="game-description">
+                    Turn everyday workplace moments into a competitive game. Perfect for call centers, training sessions, and team meetings.
+                </p>
+                <span class="badge badge-live">Live Now</span>
+            </div>
+            
+            <div class="game-card">
+                <span class="game-icon">🧠</span>
+                <h2 class="game-title">Trivia</h2>
+                <p class="game-description">
+                    Real-time trivia competitions for your team. Test knowledge, build camaraderie, and keep energy high during shifts.
+                </p>
+                <span class="badge badge-soon">Coming Soon</span>
+            </div>
+            
+            <div class="game-card">
+                <span class="game-icon">📊</span>
+                <h2 class="game-title">Polls</h2>
+                <p class="game-description">
+                    Instant team polls and surveys. Gather feedback, make decisions together, and keep everyone engaged.
+                </p>
+                <span class="badge badge-soon">Coming Soon</span>
+            </div>
+            
+            <div class="game-card">
+                <span class="game-icon">🏆</span>
+                <h2 class="game-title">Leaderboards</h2>
+                <p class="game-description">
+                    Track performance, celebrate wins, and foster healthy competition across all your team games.
+                </p>
+                <span class="badge badge-soon">Coming Soon</span>
+            </div>
+            
+            <div class="game-card">
+                <span class="game-icon">🎲</span>
+                <h2 class="game-title">Daily Challenges</h2>
+                <p class="game-description">
+                    Fresh challenges every day to keep your team motivated, engaged, and having fun at work.
+                </p>
+                <span class="badge badge-soon">Coming Soon</span>
+            </div>
+            
+            <div class="game-card">
+                <span class="game-icon">🎪</span>
+                <h2 class="game-title">More Games</h2>
+                <p class="game-description">
+                    We're always building new ways to make work more enjoyable. Have an idea? Let us know!
+                </p>
+                <span class="badge badge-soon">Coming Soon</span>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Built with ❤️ for teams who want to make work more fun</p>
+            <p style="margin-top: 10px; opacity: 0.7;">© 2026 BTFM Software Solutions</p>
+        </footer>
+    </div>
+</body>
+</html>
