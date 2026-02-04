@@ -452,7 +452,7 @@
 
         // Render keepalive
         setInterval(() => {
-            fetch('/healthz', { cache: 'no-store' }).catch(() => { });
+            fetch('/bingo/healthz', { cache: 'no-store' }).catch(() => { });
         }, 8 * 60 * 1000);
     </script>
     <div class="header" style="margin-top: 25px;">
