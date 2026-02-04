@@ -46,3 +46,12 @@ class BingoGameConsumer(AsyncWebsocketConsumer):
             'player_name': event['player_name'],
             'player_email': event['player_email']
         }))
+
+    async def player_won(self, event):
+        # Send win notification to WebSocket client
+        await self.send(text_data=json.dumps({
+            'type': 'player_won',
+            'board_uuid': event['board_uuid'],
+            'player_name': event['player_name'],
+            'pattern': event['pattern']
+        }))

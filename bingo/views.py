@@ -2,12 +2,13 @@ import json
 import uuid
 from django.http import JsonResponse
 from django.views import View
-from django.core.cache import cache
+# from django.core.cache import cache
+from .redis_game_store import get_game, save_game, touch_game   
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from .bingoServer import create_game
-
+from datetime import datetime
 
 class CreateGameView(View):
     def get(self, request):
@@ -41,7 +42,7 @@ class CreateGameView(View):
         game_data = create_game(game_id, num_players, phrases)
         
         # Store in cache (1 hour timeout)
-        cache.set(f'game_{game_id}', game_data, timeout=3600)
+        save_game(game_id, game_data)
         
         # Redirect to admin dashboard (not render)
         from django.shortcuts import redirect
@@ -51,7 +52,7 @@ class CreateGameView(View):
 class BoardView(View):
     def get(self, request, game_id, board_uuid):
         # Retrieve game data
-        game_data = cache.get(f'game_{game_id}')
+        game_data = get_game(game_id)
         
         if not game_data:
             return render(request, 'bingo/error.html', {
@@ -87,13 +88,15 @@ class BoardView(View):
                 'columns': columns,
                 'player_name': board_assignment.get('player_name', 'Anonymous'),
                 'player_email': board_assignment.get('player_email', ''),
-                'phrases_called': json.dumps(game_data.get('phrases_called', [])),  # Add this
+                'phrases_called': (game_data.get('phrases_called', [])),  # Add this
     })
         else:
             # Not claimed yet - show registration form
             return render(request, 'bingo/claim_board.html', {
                 'game_id': game_id,
-                'board_uuid': board_uuid
+                'board_uuid': board_uuid,
+                'phrases_called': (game_data.get('phrases_called', [])),  # Add this
+
             })
     
     def post(self, request, game_id, board_uuid):
@@ -110,7 +113,7 @@ class BoardView(View):
             })
         
         # Retrieve game data
-        game_data = cache.get(f'game_{game_id}')
+        game_data = get_game(game_id)
         
         if not game_data:
             return render(request, 'bingo/error.html', {
@@ -138,7 +141,7 @@ class BoardView(View):
         board_assignment['player_id'] = player_email
         
         # Update cache
-        cache.set(f'game_{game_id}', game_data, timeout=3600)
+        save_game(game_id, game_data)
         
         # BROADCAST VIA WEBSOCKET
         channel_layer = get_channel_layer()
@@ -171,6 +174,7 @@ class BoardView(View):
             'columns': columns,
             'player_name': player_name,
             'player_email': player_email,
+            'phrases_called': (game_data.get('phrases_called', []))
         })
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -188,7 +192,7 @@ def call_phrase(request, game_id):
         board_uuid = data.get('board_uuid')
         
         # Retrieve game data
-        game_data = cache.get(f'game_{game_id}')
+        game_data = get_game(game_id)
         
         if not game_data:
             return JsonResponse({'error': 'Game not found'}, status=404)
@@ -214,7 +218,7 @@ def call_phrase(request, game_id):
         game_data['phrases_called'].append(phrase)
         
         # Update cache
-        cache.set(f'game_{game_id}', game_data, timeout=3600)
+        save_game(game_id, game_data)
         
         # BROADCAST VIA WEBSOCKET
         channel_layer = get_channel_layer()
@@ -237,55 +241,11 @@ def call_phrase(request, game_id):
         import traceback
         traceback.print_exc()
         return JsonResponse({'error': str(e)}, status=500)
-    try:
-        data = json.loads(request.body)
-        phrase = data.get('phrase')
-        board_uuid = data.get('board_uuid')
-        
-        # Retrieve game data
-        game_data = cache.get(f'game_{game_id}')
-        
-        if not game_data:
-            return JsonResponse({'error': 'Game not found'}, status=404)
-        
-        # Validate phrase exists in this game (check all boards)
-        phrase_valid = False
-        for board_data in game_data['board_assignments'].values():
-            for row in board_data['board_data']:
-                if phrase in row:
-                    phrase_valid = True
-                    break
-            if phrase_valid:
-                break
-        
-        if not phrase_valid:
-            return JsonResponse({'error': 'Invalid phrase'}, status=400)
-        
-        # Check if already called
-        if phrase in game_data['phrases_called']:
-            return JsonResponse({'error': 'Already called'}, status=400)
-        
-        # Add to phrases_called
-        game_data['phrases_called'].append(phrase)
-        
-        # Update cache
-        cache.set(f'game_{game_id}', game_data, timeout=3600)
-        
-        # TODO: Broadcast via WebSocket to all clients
-        
-        return JsonResponse({
-            'success': True,
-            'phrase': phrase,
-            'total_called': len(game_data['phrases_called'])
-        })
-        
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
     
 class GameAdminView(View):
     def get(self, request, game_id):
         # Retrieve game data
-        game_data = cache.get(f'game_{game_id}')
+        game_data = get_game(game_id)
         
         if not game_data:
             return render(request, 'bingo/error.html', {
@@ -300,7 +260,7 @@ class GameAdminView(View):
     
 @require_http_methods(["GET"])
 def get_game_state(request, game_id):
-    game_data = cache.get(f'game_{game_id}')
+    game_data = get_game(game_id)
     
     if not game_data:
         return JsonResponse({'error': 'Game not found'}, status=404)
@@ -321,3 +281,77 @@ from django.http import JsonResponse
 
 def healthz(request):
     return JsonResponse({"ok": True})
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def claim_win(request, game_id):
+    try:
+        data = json.loads(request.body)
+        board_uuid = data.get('board_uuid')
+        pattern = data.get('pattern')
+        positions = data.get('positions')
+        
+        # Retrieve game data
+        game_data = get_game(game_id)
+        
+        if not game_data:
+            return JsonResponse({'error': 'Game not found'}, status=404)
+        
+        # Get board
+        board_assignment = game_data['board_assignments'].get(board_uuid)
+        if not board_assignment:
+            return JsonResponse({'error': 'Invalid board'}, status=404)
+        
+        # Get phrases on this board at the claimed positions
+        board_phrases = []
+        for pos in positions:
+            row = pos // 5
+            col = pos % 5
+            phrase = board_assignment['board_data'][row][col]
+            board_phrases.append(phrase)
+        
+        # Validate: all phrases at those positions must be called (or Free Space)
+        phrases_called_set = set(game_data['phrases_called'])
+        phrases_called_set.add('Free Space')  # Free Space is always valid
+        
+        for phrase in board_phrases:
+            if phrase not in phrases_called_set:
+                return JsonResponse({
+                    'success': False,
+                    'error': f'Phrase "{phrase}" has not been called yet'
+                }, status=400)
+        
+        # Valid win! Record it
+        winner = {
+            'board_uuid': board_uuid,
+            'player_name': board_assignment.get('player_name', 'Anonymous'),
+            'player_email': board_assignment.get('player_email'),
+            'pattern': pattern,
+            'timestamp': str(datetime.now())
+        }
+        
+        game_data['winners'].append(winner)
+        save_game(game_id, game_data)
+        
+        # Broadcast win to all clients
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f'bingo_game_{game_id}',
+            {
+                'type': 'player_won',
+                'board_uuid': board_uuid,
+                'player_name': winner['player_name'],
+                'pattern': pattern
+            }
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'pattern': pattern,
+            'player_name': winner['player_name']
+        })
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({'error': str(e)}, status=500)

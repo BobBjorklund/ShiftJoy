@@ -340,7 +340,6 @@
         const gameId = "{{ game_id }}";
 
         function viewBoard(boardUuid) {
-            // Use unique window name per board
             window.open(`/bingo/games/${gameId}/${boardUuid}/`, `BingoBoard_${boardUuid}`,
                 'width=600,height=700,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no');
         }
@@ -350,18 +349,16 @@
             const newName = prompt('Enter new player name:', currentName);
 
             if (newName && newName !== currentName) {
-                // TODO: Send to server via AJAX
                 document.getElementById(`player-name-${boardUuid}`).textContent = newName;
                 alert('Name updated! (Backend integration pending)');
             }
         }
 
         // Load initially called phrases and mark them
-        const calledPhrasesRaw = "{{ game_data.phrases_called|default:'[]'|escapejs }}";
-        const initialCalledPhrases = JSON.parse(calledPhrasesRaw);
-
+        const calledPhrasesRaw = {{ game_data.phrases_called|default:'[]'|safe }};
+        const initialCalledPhrases = calledPhrasesRaw;
+        console.log('Initial called phrases:', initialCalledPhrases.typeof);
         function markPhraseOnAllBoards(phrase) {
-            // Find all mini-squares with this phrase and mark them
             document.querySelectorAll('.mini-square').forEach(square => {
                 if (square.dataset.phrase === phrase) {
                     square.classList.add('called');
@@ -370,24 +367,27 @@
         }
 
         // Mark all initially called phrases on page load
+        if (initialCalledPhrases.length > 0) {
         initialCalledPhrases.forEach(phrase => {
             markPhraseOnAllBoards(phrase);
         });
+    }
+
+        // Update counter on page load
+        document.getElementById('phrasesCalledCount').textContent = initialCalledPhrases.length;
 
         function updatePlayerDisplay(boardUuid, boardData) {
             const playerNameDiv = document.getElementById(`player-name-${boardUuid}`);
+            if (!playerNameDiv) return;  // Board might not be visible yet
+
             const playerInfoDiv = playerNameDiv.closest('.player-info');
             const statusBadge = playerInfoDiv.closest('.board-right').querySelector('.status-badge');
 
             if (boardData.assigned) {
-                // Update player name
                 playerNameDiv.textContent = boardData.player_name || 'Anonymous';
-
-                // Update player info styling
                 playerInfoDiv.style.background = '#e3f2fd';
                 playerInfoDiv.style.border = '';
 
-                // Add email if not present
                 let emailDiv = playerInfoDiv.querySelector('.player-link');
                 if (!emailDiv && boardData.player_email) {
                     emailDiv = document.createElement('div');
@@ -398,7 +398,6 @@
                     emailDiv.textContent = boardData.player_email;
                 }
 
-                // Update status badge
                 statusBadge.classList.remove('status-waiting');
                 statusBadge.classList.add('status-assigned');
                 statusBadge.textContent = 'ACTIVE';
@@ -422,8 +421,6 @@
             if (data.type === 'phrase_called') {
                 console.log('Phrase called:', data.phrase);
                 markPhraseOnAllBoards(data.phrase);
-
-                // Update phrases called counter
                 document.getElementById('phrasesCalledCount').textContent = data.total_called;
             }
 
@@ -434,6 +431,11 @@
                     player_name: data.player_name,
                     player_email: data.player_email
                 });
+            }
+
+            if (data.type === 'player_won') {
+                console.log(`${data.player_name} won with ${data.pattern}!`);
+                // TODO: Show win notification
             }
         };
 
@@ -447,6 +449,8 @@
                 window.location.reload();
             }, 3000);
         };
+
+        // Render keepalive
         setInterval(() => {
             fetch('/healthz', { cache: 'no-store' }).catch(() => { });
         }, 8 * 60 * 1000);
